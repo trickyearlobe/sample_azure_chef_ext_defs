@@ -1,0 +1,215 @@
+{
+  "mode": "Indexed",
+  "policyRule": {
+    "if": {
+      "allOf": [
+        {
+          "field": "type",
+          "equals": "Microsoft.Compute/virtualMachines"
+        },
+        {
+          "field": "Microsoft.Compute/imagePublisher",
+          "equals": "MicrosoftWindowsServer"
+        },
+        {
+          "field": "Microsoft.Compute/imageOffer",
+          "equals": "WindowsServer"
+        },
+        {
+          "field": "Microsoft.Compute/imageSKU",
+          "in": [
+            "2008-R2-SP1",
+            "2008-R2-SP1-smalldisk",
+            "2012-Datacenter",
+            "2012-Datacenter-smalldisk",
+            "2012-R2-Datacenter",
+            "2012-R2-Datacenter-smalldisk",
+            "2016-Datacenter",
+            "2016-Datacenter-Server-Core",
+            "2016-Datacenter-Server-Core-smalldisk",
+            "2016-Datacenter-smalldisk",
+            "2016-Datacenter-with-Containers",
+            "2016-Datacenter-with-RDSH",
+            "2019-Datacenter",
+            "2019-Datacenter-Core",
+            "2019-Datacenter-Core-smalldisk",
+            "2019-Datacenter-with-Containers"
+          ]
+        }
+      ]
+    },
+    "then": {
+      "effect": "deployIfNotExists",
+      "details": {
+        "type": "Microsoft.Compute/virtualMachines/extensions",
+        "roleDefinitionIds": [
+          "/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c"
+        ],
+        "existenceCondition": {
+          "allOf": [
+            {
+              "field": "Microsoft.Compute/virtualMachines/extensions/type",
+              "equals": "ChefClient"
+            },
+            {
+              "field": "Microsoft.Compute/virtualMachines/extensions/publisher",
+              "equals": "Chef.Bootstrap.WindowsAzure"
+            }
+          ]
+        },
+        "deployment": {
+          "properties": {
+            "mode": "incremental",
+            "template": {
+              "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+              "contentVersion": "1.0.0.0",
+              "parameters": {
+                "hostname": {
+                  "type": "String"
+                },
+                "client_rb": {
+                  "type": "String"
+                },
+                "bootstrap_version": {
+                  "type": "String"
+                },
+                "ssl_verify_mode": {
+                  "type": "String"
+                },
+                "chef_server_url": {
+                  "type": "String"
+                },
+                "validation_client_name": {
+                  "type": "String"
+                },
+                "base64_validation_key": {
+                  "type": "String"
+                },
+                "policy_name": {
+                  "type": "String"
+                },
+                "policy_group": {
+                  "type": "String"
+                },
+                "chef_package_url": {
+                  "type": "String"
+                }
+              },
+              "variables": {},
+              "resources": [
+                {
+                  "type": "Microsoft.Compute/virtualMachines/extensions",
+                  "name": "[concat(parameters('hostname'),'/WindowsChefExtension')]",
+                  "apiVersion": "2019-03-01",
+                  "location": "[resourceGroup().location]",
+                  "dependsOn": [],
+                  "properties": {
+                    "autoUpgradeMinorVersion": false,
+                    "publisher": "Chef.Bootstrap.WindowsAzure",
+                    "type": "ChefClient",
+                    "typeHandlerVersion": "1210.13",
+                    "settings": {
+                      "client_rb": "[parameters('client_rb')]",
+                      "bootstrap_version": "[parameters('bootstrap_version')]",
+                      "bootstrap_options": {
+                        "chef_node_name": "[parameters('hostname')]",
+                        "chef_server_url": "[parameters('chef_server_url')]",
+                        "validation_client_name": "[parameters('validation_client_name')]",
+                        "node_ssl_verify_mode": "[parameters('ssl_verify_mode')]"
+                      },
+                      "chef_package_url" : "[parameters('chef_package_url')]",
+                      "validation_key_format": "base64encoded",
+                      "environment_parameters": {},
+                      "custom_json_attr": {
+                        "policy_name": "[parameters('policy_name')]",
+                        "policy_group": "[parameters('policy_group')]"
+                      },
+                      "hints": {
+                        "vm_name": "[parameters('hostname')]"
+                      },
+                      "daemon": "task"
+                    },
+                    "protectedSettings": {
+                      "validation_key": "[parameters('base64_validation_key')]"
+                    }
+                  }
+                }
+              ],
+              "outputs": {}
+            },
+            "parameters": {
+              "hostname": {
+                "value": "[field('name')]"
+              },
+              "client_rb": {
+                "value": "[parameters('client_rb')]"
+              },
+              "bootstrap_version": {
+                "value": "[parameters('bootstrap_version')]"
+              },
+              "ssl_verify_mode": {
+                "value": "[parameters('ssl_verify_mode')]"
+              },
+              "chef_server_url": {
+                "value": "[parameters('chef_server_url')]"
+              },
+              "validation_client_name": {
+                "value": "[parameters('validation_client_name')]"
+              },
+              "base64_validation_key": {
+                "value": "[parameters('base64_validation_key')]"
+              },
+              "policy_name": {
+                "value": "[parameters('policy_name')]"
+              },
+              "policy_group": {
+                "value": "[parameters('policy_group')]"
+              },
+              "chef_package_url": {
+                "value": "[parameters('chef_package_url')]"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "parameters": {
+    "client_rb": {
+      "type": "String",
+      "defaultValue": "chef_license 'accept'\n"
+    },
+    "bootstrap_version": {
+      "type": "String",
+      "defaultValue": "15"
+    },
+    "ssl_verify_mode": {
+      "type": "String",
+      "defaultValue": "none"
+    },
+    "chef_server_url": {
+      "type": "String",
+      "defaultValue": "https://<redacted>.cqzm342021kuplrtbsuyrtjnpd.fx.internal.cloudapp.net/organizations/<redacted>"
+    },
+    "validation_client_name": {
+      "type": "String",
+      "defaultValue": "<redacted>-validator"
+    },
+    "base64_validation_key": {
+      "type": "String",
+      "defaultValue": "LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFcEFJQkFBS0NBUUVBMkpaOVpwU2NqMldIWWpWTU5NeWtHT1BoUGNtaldzSjdsOWluUUVFS1R2bjFQSHRJCkRhdHpIaGk0bGppSmdxV1VBN3hoSjIwLzFUNkdKaWVLRWVJLzh6SGJDeERvMVRKL1VPREhLSlNzYzZaQzdnNFEKbzVHK2wyNWtRVjdtUU1IK3dnQ093K1BWTjlUWVMzMHM3V1hWcWRpVzFiRjhnMks1OHByUWFLTXIwSFUvVFM5cgpIVTJ2WXR2VmJyY3lWSVhyMElxQngzaGUwU1BLalp0TDY1a0F2eXJ4ZS9HZ2VvTzMxZXZuQTdTWG5adlJWa3pwCjBVYWJCWHpqVURHbDUwUnUvRDllbUFvU2FEcFdpdGNrd3Z2UzVGLzI4dDBTVGc1OCtMWVhPMTkxRWZjNnRVekwKQkRXM091WkkrbFMyUEd2K2lUYngvd25TRklmYmIwNVhsMDFiVndJREFRQUJBb0lCQUNsVlZ1c3JzMUVlWkI3Vwo0d3MwZnFDTlpKL2hDajY0M05OV3NseHR6U1RUU1B6WTNpQlZ0dXRvZGxtY3dvbGZSZ2NNZlZJRDVHbXl1L0V1CkhJaGJNQzhlTlpwQUNOOGUrdk1aWW9pWkR1d25MNkMwcUhJK3p5dWhFcHJ6SEdnQlhiZnlXVXlDLzE3ZlRNUGoKU0o2cGo0UVJaSCsxbG5pUWI4SWZ6MlFZdDdUWlFWYWNpSFo4N0NJQm5lWmV0c1N1SHlaREhFdTB0S0ZDTFI0Ngo2endMTW1kbTUvMkhKQW9WZW1LeE5TcGRKTXI3M01rK1ovaHQvdE9PMGdYM0VGRDdUYkQ4OU9zcHZsRnByZTFlCnBtczRLMU0zWWpxUGEzRE1pZ3NUK3JoSVRsNWZPT0RnQThSeHZQK05iWGgvUUNKclF3a2kydGtiTHUyNzc4V3EKcWZQVHdIRUNnWUVBOTA4MkxXWUpMbjk4aE5kYVh2SzhVVnU4SWQzRUdMTUpnTjVXY1EvbXRpU2d2c210T2tGUgpqZlFoNVFZdXE3ZHkwNjgvRXdMMm5oMzB0ZDNUMnBqTHdxTWM3TTU4VGxuTW5qNmphMTJFeUpEc25LY3EzVWsrCnlnVnpwK2pUOGt4aEVWeWRDclFFRDdEM3ZXMzV2QmcwUjBGZmhhRDVEMzJQMU1WN1NDUWhsUmtDZ1lFQTRETG8KYWhkY0I1S1dqN0l2TFpRcHI2ZGc2d0FZeEgyM0Z1OVFjM2p0U3dWd3p4dW9NVG5NcG9ncWF1RS83N1FmSVRSSQpkT05GM3dlTlRhQ3ZWY1ozT2dhQ29NZlhZWjYySERRZWhldXZoYmtQK0FjQ3lxNGwzL0txVzVYZGprMWMzVzAzCitnWnZleGg4aU80SmRWNXNDM0Jwa2FselVMN1M1LzA1amRxQWtlOENnWUVBbjQ3NHFtTzVxc2xQNGprN01pVTAKQU4zSnpLUFRBQWlMS2h6SThwdEt3OXR2NW9naC9vTGtCazByalNMbSs1MFpOYUJNZG95ajVySDNEMXQyY3dPLwordXpZSGFTL0tLSGhWWHVlWGdmeFFxSFdOdC9YMVB1THlqV29QLzRFdU1BMHBFbjNmRTlXaTNVbThZM0I0V3hRClZtVEVKMmdMS01aZkJPMEF0RE96Z3drQ2dZRUF1QUdRTnVLTktibnAwRzRSd25yRDYrS1g3TWZiakFrUjU4VHEKWnB0dFJoRmxFTlpHS0lDanNsbzNWaGtnL0g3OHZhZkhnQWU0Sk9CeDNMQnd0eGw0YVN0R3N1YlJvdEU3N2RIbwo2MGtRZWRQMWd6OWR6ek0yNnFLanB4OU5BNm9DK2NqV0ZHS0x4Si9JTmlvSG9VaXBySW5LV3o2VDRrVjdtK045CkJTdThNZ2tDZ1lBaGIxNVlEUEh1QlJMVXZlMDJlNjNkTUN0eGhyaTRxeVh1NHRSOWNwanc5UUtWUFRod2pWMWsKSXRRd0pqRUhvNzBuMnprK21qanFqQlZaZEZFV1FNUW9iamFtajVlbU1MbUJPdkJ6cUE4Ny9iVFphNGZYT2JJcQo3aHlhdTdISzk0NTRIajY5RnFEa3Z1M2kvWlMvM3UzU0dweEc5RVpXYzB5YlM4RnJWQTFxWFE9PQotLS0tLUVORCBSU0EgUFJJVkFURSBLRVktLS0tLQ=="
+    },
+    "policy_name": {
+      "type": "String",
+      "defaultValue": "no_op"
+    },
+    "policy_group": {
+      "type": "String",
+      "defaultValue": "production"
+    },
+    "chef_package_url": {
+      "type": "String",
+      "defaultValue": "https://<redacted>.blob.core.windows.net/packages/chef-client-15.12.22-1-x64.msi"
+    }
+  }
+}
